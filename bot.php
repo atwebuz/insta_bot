@@ -43,7 +43,7 @@ if($text1=="/start"){
 			
 				else{
 		$instalink="http://eletest.teleagent.ir/insta/?url=$text1";
-		$insta=json_decode(file_get_contents($instalink),trur);
+		$insta=json_decode(file_get_contents($instalink),true);
 		$ok=$insta['ok'];
 		$photo=$insta['aks'];
 		$video=$insta['video'];
