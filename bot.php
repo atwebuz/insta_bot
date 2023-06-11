@@ -1,71 +1,34 @@
 <?php
-//neveshteh shode tvasatoe #elyas #galikeshi @sudo_avenger
-ob_start();
-//token ro inja vared konid
-define('API_KEY','[6052629950:AAFOdPDzWcK65TS37sRyt3RPRZVBAvJod3k]');
-$admin = "[abdusattorov_devw]";
-$admin2 = "125858918";
-function bot($method,$datas=[]){
-    $url = "https://api.telegram.org/bot".API_KEY."/".$method;
-    $ch = curl_init();
-    curl_setopt($ch,CURLOPT_URL,$url);
-    curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-    curl_setopt($ch,CURLOPT_POSTFIELDS,$datas);
-    $res = curl_exec($ch);
-    if(curl_error($ch)){
-        var_dump(curl_error($ch));
-    }else{
-        return json_decode($res);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Telegram\Bot\Api;
+use Telegram\Bot\Commands\Command;
+use Telegram\Bot\Objects\Update;
+
+class DownloadCommand extends Command
+{
+    protected $name = 'download';
+
+    public function handle($arguments)
+    {
+        $videoUrl = $arguments;
+
+        // Download the video using file_get_contents()
+        $videoContent = file_get_contents($videoUrl);
+
+        // Save the video file
+        file_put_contents('video.mp4', $videoContent);
+
+        // Send the video file to the user
+        $this->replyWithVideo([
+            'video' => fopen('video.mp4', 'r'),
+        ]);
     }
 }
-$update = json_decode(file_get_contents('php://input'));
-$message = $update->message;
-$message_id = $message->message_id;
-$chat_id = $message->chat->id;
-$fname = $message->chat->first_name;
-$uname = $message->chat->username;
-$text1 = $message->text;
-$fadmin = $message->from->id;
-$chatid = $update->callback_query->message->chat->id;
-if($text1=="/start"){
-	bot('sendmessage',[
-	'chat_id'=>$chat_id,
-	'text'=>"با سلام به ربات اینستا دانلودر خوش آمدید\n\nلطفا لینک پست اینستاگرامتون رو بفرستید تا براتون دانش کنم و بفرستمش😘"
-	]);
-	}	
-		elseif($text1=="/creator"){
-			bot('sendmessage',[
-			'chat_id'=>$chat_id,
-			'text'=>"این ڔبات توسط @phpfun_bot ساخته شده است",
-			]);
-			}
-		
-			
-				else{
-		$instalink="http://eletest.teleagent.ir/insta/?url=$text1";
-		$insta=json_decode(file_get_contents($instalink),true);
-		$ok=$insta['ok'];
-		$photo=$insta['aks'];
-		$video=$insta['video'];
-		if($ok=="false"){
-			bot('sendmessage',[
-			'chat_id'=>$chat_id,
-			'text'=>"لینک شما نامبعتر و غلط میباشد⛔",
-			]);
-			}elseif($photo=="false")
-{
-bot('sendvideo',[
-'chat_id'=>$chat_id,
-'video'=>$video,
-'caption'=>"فیلم شما دانلود شد✅",
-]);
 
-}		else{
-bot('sendphoto',[
-'chat_id'=>$chat_id,
-'photo'=>$photo,
-'caption'=>"عکس شما دانلود شد✅",
-]);
+$telegram = new Api('6052629950:AAFOdPDzWcK65TS37sRyt3RPRZVBAvJod3k');
 
-}
-		}
+$telegram->addCommand(DownloadCommand::class);
+
+$telegram->commandsHandler(true);
